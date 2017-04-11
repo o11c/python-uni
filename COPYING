@@ -1,0 +1,22 @@
+There are two licenses that apply to files in this package:
+* one for source code, and
+* one for bundled data.
+
+***
+
+All source code is licensed under the "GNU Lesser General Public License",
+version 3 or later; see COPYING.lgpl and COPYING.gpl. All files *should*
+have accurate license headers.
+
+License url: https://www.gnu.org/licenses/lgpl.html
+License url: https://www.gnu.org/licenses/gpl.html
+
+***
+
+The bundled data files are licensed under the "UNICODE, INC. LICENSE
+AGREEMENT - DATA FILES AND SOFTWARE"; see COPYING.unicode.
+Note that this license supercedes the more-restrictive license in the
+header comments of some of the files.
+
+License url: http://unicode.org/copyright.html
+Data url root: http://www.unicode.org/Public/
