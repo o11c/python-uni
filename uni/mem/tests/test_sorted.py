@@ -51,12 +51,20 @@ class TestSortedSet(unittest.TestCase):
         s = SortedSet({'foo', 'bar'})
         assert [x for x in s if x in s] == ['bar', 'foo']
 
+    def test_repr(self):
+        s = SortedSet()
+        repr(s)
+        s = SortedSet({2, 1})
+        repr(s)
+        s = SortedSet({'foo', 'bar'})
+        repr(s)
+
     def test_raw(self):
-        s = SortedSet(raw=np.array([], dtype=SortedSet.typical_dtype))
+        s = SortedSet._from_raw(0, np.array([], dtype='>u4'))
         assert not s and len(s) == 0
         assert list(s) == []
         assert [x for x in s if x in s] == []
-        s = SortedSet(raw=np.array([(1,), (2,)], dtype=SortedSet.typical_dtype))
+        s = SortedSet._from_raw(2, np.array([1, 2], dtype='>u4'))
         assert s and len(s) == 2
         assert list(s) == [1, 2]
         assert [x for x in s if x in s] == [1, 2]
@@ -86,12 +94,18 @@ class TestSortedRangeSet(unittest.TestCase):
         s = SortedRangeSet({2, 1})
         assert [x for x in s if x in s] == [1, 2]
 
+    def test_repr(self):
+        s = SortedRangeSet()
+        repr(s)
+        s = SortedRangeSet({2, 1})
+        repr(s)
+
     def test_raw(self):
-        s = SortedRangeSet(raw_len=0, raw=np.array([], dtype=SortedRangeSet.typical_dtype))
+        s = SortedRangeSet._from_raw(0, np.array([], dtype='>u4'), np.array([], dtype='>u4'))
         assert not s and len(s) == 0
         assert list(s) == []
         assert [x for x in s if x in s] == []
-        s = SortedRangeSet(raw_len=2, raw=np.array([(1, 2)], dtype=SortedRangeSet.typical_dtype))
+        s = SortedRangeSet._from_raw(2, np.array([1], dtype='>u4'), np.array([2], dtype='>u4'))
         assert s and len(s) == 2
         assert list(s) == [1, 2]
         assert [x for x in s if x in s] == [1, 2]
@@ -129,12 +143,20 @@ class TestSortedMap(unittest.TestCase):
         m = SortedMap({'foo': 1, 'bar': 2, 'baz': 1})
         assert list(m.items()) == [('bar', 2), ('baz', 1), ('foo', 1)]
 
+    def test_repr(self):
+        m = SortedMap()
+        repr(m)
+        m = SortedMap({3: 'x', 1: 'y', 2: 'x'})
+        repr(m)
+        m = SortedMap({'foo': 1, 'bar': 2, 'baz': 1})
+        repr(m)
+
     def test_raw(self):
-        m = SortedMap(raw=np.array([], dtype=SortedMap.typical_dtype))
+        m = SortedMap._from_raw(0, np.array([], dtype='>u4'), np.array([], dtype='O'))
         assert not m and len(m) == 0
         assert list(m) == []
         assert list(m.items()) == []
-        m = SortedMap(raw=np.array([(1, 'y'), (2, 'x'), (3, 'x')], dtype=SortedMap.typical_dtype))
+        m = SortedMap._from_raw(3, np.array([1, 2, 3], dtype='>u4'), np.array(['y', 'x', 'x'], dtype='O'))
         assert m and len(m) == 3
         assert list(m) == [1, 2, 3]
         assert list(m.items()) == [(1, 'y'), (2, 'x'), (3, 'x')]
@@ -164,12 +186,18 @@ class TestSortedRangeMap(unittest.TestCase):
         m = SortedRangeMap({3: 'x', 1: 'y', 2: 'x'})
         assert list(m.items()) == [(1, 'y'), (2, 'x'), (3, 'x')]
 
+    def test_repr(self):
+        m = SortedRangeMap()
+        repr(m)
+        m = SortedRangeMap({3: 'x', 1: 'y', 2: 'x'})
+        repr(m)
+
     def test_raw(self):
-        m = SortedRangeMap(raw_len=0, raw=np.array([], dtype=SortedRangeMap.typical_dtype))
+        m = SortedRangeMap._from_raw(0, np.array([], dtype='>u4'), np.array([], dtype='>u4'), np.array([], dtype='O'))
         assert not m and len(m) == 0
         assert list(m) == []
         assert list(m.items()) == []
-        m = SortedRangeMap(raw_len=3, raw=np.array([(1, 1, 'y'), (2, 3, 'x')], dtype=SortedRangeMap.typical_dtype))
+        m = SortedRangeMap._from_raw(3, np.array([1, 2], dtype='>u4'), np.array([1, 3], dtype='>u4'), np.array(['y', 'x'], dtype='O'))
         assert m and len(m) == 3
         assert list(m) == [1, 2, 3]
         assert list(m.items()) == [(1, 'y'), (2, 'x'), (3, 'x')]

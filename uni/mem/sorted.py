@@ -18,111 +18,94 @@ import bisect
 from collections.abc import Set, Mapping
 import itertools
 from numbers import Integral
-import numpy as np
 
 
-def bisect_right_key(a, x, lo=0, hi=None, *, key=None):
-    if key is None:
-        return bisect.bisect_right(a, x, lo, hi)
-    key_of_x = key(x)
-
-    if lo < 0:
-        raise ValueError('lo must be non-negative')
-    if hi is None:
-        hi = len(a)
-    while lo < hi:
-        mid = (lo+hi)//2
-        if key_of_x < key(a[mid]): hi = mid
-        else: lo = mid+1
-    return lo
-
-
-def _bisect_with_tuples(arr, item, *, singleton):
-    idx = bisect_right_key(arr, (item,), key=lambda t: t[0])
-    assert 0 <= idx <= len(arr)
-    assert idx == 0 or arr[idx - 1][0] <= item
-    assert idx == len(arr) or item < arr[idx][0]
-    return idx - 1
+def round_up_to_pow2(x):
+    assert x > 0
+    return 1 << (x-1).bit_length()
 
 
 class SortedSet(Set):
     ''' Keys stored as singleton, no values.
     '''
-    typical_dtype = np.dtype([('key', '>i4')])
+    def __init__(self, iterable=None):
+        self._len = 0
+        self._keys = []
+        if iterable is not None:
+            iterable = sorted(iterable)
+            for key in iterable:
+                self._append(key)
 
-    def __init__(self, iterable=None, *, raw=None, check=True):
-        if raw is None:
-            if iterable is None:
-                raw = []
-            else:
-                raw = sorted((k,) for k in iterable)
-        else:
-            assert iterable is None
-        self._len = len(raw)
-        self._data = raw
-        if check:
-            assert all(isinstance(x, (tuple, np.void)) and len(x) == 1 for x in raw)
-            assert all(x[0] < y[0] for (x, y) in zip(raw, itertools.islice(raw, 1, None)))
+    def _append(self, key):
+        self._keys.append(key)
+        self._len += 1
+
+    @classmethod
+    def _from_raw(cls, len, keys):
+        self = cls.__new__(cls)
+        self._len = len
+        self._keys = keys
+        return self
 
     def __contains__(self, item):
-        idx = _bisect_with_tuples(self._data, item, singleton=True)
-        if idx == -1:
-            return False
-        tup = self._data[idx]
-        return tup[0] == item
+        idx = bisect.bisect_right(self._keys, item) - 1
+        if idx != -1:
+            assert self._keys[idx] <= item
+            if item == self._keys[idx]:
+                return True
+        return False
 
     def __iter__(self):
-        for k, in self._data:
+        for k, in zip(self._keys):
             yield k
 
     def __len__(self):
         return self._len
 
     def __repr__(self):
-        return '%s(len=%d, raw=%r)' % (self.__class__.__qualname__, self._len, self._data)
+        return '%s(len=%d, keys=%r)' % (self.__class__.__qualname__, self._len, self._keys)
 
 
 class SortedRangeSet(Set):
     ''' Key-range stored in pairs, no values.
     '''
-    typical_dtype = np.dtype([('low_key', '>i4'), ('high_key', '>i4')])
+    def __init__(self, iterable=None):
+        self._len = 0
+        self._low_keys = []
+        self._high_keys = []
+        if iterable is not None:
+            iterable = sorted(iterable)
+            for key in iterable:
+                self._append_range(key, key)
 
-    def __init__(self, iterable=None, *, raw=None, raw_len=None, check=True):
-        if raw is None:
-            assert raw_len is None
-            if iterable is None:
-                iterable = []
-            else:
-                iterable = sorted((k,) for k in iterable)
-            self._len = len(iterable)
-            if check:
-                assert all(isinstance(x, (tuple, np.void)) and len(x) == 1 and isinstance(x[0], Integral) for x in iterable)
-                assert all(x[0] < y[0] for (x, y) in zip(iterable, itertools.islice(iterable, 1, None)))
-            raw = []
-            for k, in iterable:
-                if raw and raw[-1][1] == k - 1:
-                    raw[-1] = (raw[-1][0], k)
-                    continue
-                raw.append((k, k))
+    def _append_range(self, low_key, high_key):
+        assert not self._len or self._high_keys[-1] < low_key
+        assert low_key <= high_key
+        if self._len and self._high_keys[-1] + 1 == low_key:
+            self._high_keys[-1] = high_key
         else:
-            assert iterable is None
-            assert raw_len is not None
-            self._len = raw_len
-        self._data = raw
-        if check:
-            assert all(isinstance(x, (tuple, np.void)) and len(x) == 2 and isinstance(x[0], Integral) and isinstance(x[1], Integral) for x in raw)
-            assert all(x[1] < y[0] for (x, y) in zip(raw, itertools.islice(raw, 1, None)))
-            assert len(self) == len(list(self))
+            self._low_keys.append(low_key)
+            self._high_keys.append(high_key)
+        self._len += high_key - low_key + 1
+
+    @classmethod
+    def _from_raw(cls, len, low_keys, high_keys):
+        self = cls.__new__(cls)
+        self._len = len
+        self._low_keys = low_keys
+        self._high_keys = high_keys
+        return self
 
     def __contains__(self, item):
-        idx = _bisect_with_tuples(self._data, item, singleton=False)
-        if idx == -1:
-            return False
-        tup = self._data[idx]
-        return tup[0] <= item <= tup[1]
+        idx = bisect.bisect_right(self._low_keys, item) - 1
+        if idx != -1:
+            assert self._low_keys[idx] <= item
+            if item <= self._high_keys[idx]:
+                return True
+        return False
 
     def __iter__(self):
-        for k1, k2 in self._data:
+        for k1, k2 in zip(self._low_keys, self._high_keys):
             for k in range(k1, k2+1):
                 yield k
 
@@ -130,93 +113,100 @@ class SortedRangeSet(Set):
         return self._len
 
     def __repr__(self):
-        return '%s(len=%d, raw=%r)' % (self.__class__.__qualname__, self._len, self._data)
+        return '%s(len=%d, low_keys=%r, high_keys=%r)' % (self.__class__.__qualname__, self._len, self._low_keys, self._high_keys)
 
 
 class SortedMap(Mapping):
     ''' Keys stored as first, value as second.
     '''
-    typical_dtype = np.dtype([('key', '>i4'), ('value', 'O')])
+    def __init__(self, iterable=None):
+        self._len = 0
+        self._keys = []
+        self._values = []
+        if iterable is not None:
+            if isinstance(iterable, Mapping):
+                iterable = iterable.items()
+            iterable = sorted(iterable)
+            for key, value in iterable:
+                self._append(key, value)
 
-    def __init__(self, iterable=None, *, raw=None, check=True):
-        if raw is None:
-            if iterable is None:
-                raw = []
-            else:
-                if isinstance(iterable, Mapping):
-                    iterable = iterable.items()
-                raw = sorted(iterable)
-        else:
-            assert iterable is None
-        self._len = len(raw)
-        self._data = raw
-        if check:
-            assert all(isinstance(x, (tuple, np.void)) and len(x) == 2 for x in raw)
-            assert all(x[0] < y[0] for (x, y) in zip(raw, itertools.islice(raw, 1, None)))
+    def _append(self, key, value):
+        self._keys.append(key)
+        self._values.append(value)
+        self._len += 1
+
+    @classmethod
+    def _from_raw(cls, len, keys, values):
+        self = cls.__new__(cls)
+        self._len = len
+        self._keys = keys
+        self._values = values
+        return self
 
     def __getitem__(self, item):
-        idx = _bisect_with_tuples(self._data, item, singleton=False)
+        idx = bisect.bisect_right(self._keys, item) - 1
         if idx != -1:
-            tup = self._data[idx]
-            if tup[0] == item:
-                return tup[1]
+            assert self._keys[idx] <= item
+            if item == self._keys[idx]:
+                return self._values[idx]
         raise KeyError(item)
 
     def __iter__(self):
-        for k, v in self._data:
+        for k, v in zip(self._keys, self._values):
             yield k
 
     def __len__(self):
         return self._len
 
     def __repr__(self):
-        return '%s(len=%d, raw=%r)' % (self.__class__.__qualname__, self._len, self._data)
+        return '%s(len=%d, keys=%r, values=%r)' % (self.__class__.__qualname__, self._len, self._keys, self._values)
 
 
 class SortedRangeMap(Mapping):
     ''' Key-range stored as first and second, value as third.
     '''
-    typical_dtype = np.dtype([('low_key', '>i4'), ('high_key', '>i4'), ('value', 'O')])
+    def __init__(self, iterable=None):
+        self._len = 0
+        self._low_keys = []
+        self._high_keys = []
+        self._values = []
+        if iterable is not None:
+            if isinstance(iterable, Mapping):
+                iterable = iterable.items()
+            iterable = sorted(iterable)
+            for key, value in iterable:
+                self._append_range(key, key, value)
 
-    def __init__(self, iterable=None, *, raw=None, raw_len=None, check=True):
-        if raw is None:
-            assert raw_len is None
-            if iterable is None:
-                iterable = []
-            else:
-                if isinstance(iterable, Mapping):
-                    iterable = iterable.items()
-                iterable = sorted(iterable)
-            self._len = len(iterable)
-            if check:
-                assert all(isinstance(x, (tuple, np.void)) and len(x) == 2 and isinstance(x[0], Integral) for x in iterable)
-                assert all(x[0] < y[0] for (x, y) in zip(iterable, itertools.islice(iterable, 1, None)))
-            raw = []
-            for k, v in iterable:
-                if raw and raw[-1][1] == k - 1 and raw[-1][2] == v:
-                    raw[-1] = (raw[-1][0], k, v)
-                    continue
-                raw.append((k, k, v))
+    @classmethod
+    def _from_raw(cls, len, low_keys, high_keys, values):
+        self = cls.__new__(cls)
+        self._len = len
+        self._low_keys = low_keys
+        self._high_keys = high_keys
+        self._values = values
+        return self
+
+    def _append_range(self, low_key, high_key, value):
+        assert not self._len or self._high_keys[-1] < low_key
+        assert low_key <= high_key
+        if self._len and self._high_keys[-1] + 1 == low_key and self._values[-1] == value:
+            self._high_keys[-1] = high_key
         else:
-            assert iterable is None
-            assert raw_len is not None
-            self._len = raw_len
-        self._data = raw
-        if check:
-            assert all(isinstance(x, (tuple, np.void)) and len(x) == 3 and isinstance(x[0], Integral) and isinstance(x[1], Integral) for x in raw)
-            assert all(x[1] < y[0] for (x, y) in zip(raw, itertools.islice(raw, 1, None)))
-            assert len(self) == len(list(self))
+            self._low_keys.append(low_key)
+            self._high_keys.append(high_key)
+            self._values.append(value)
+        self._len += high_key - low_key + 1
 
     def __getitem__(self, item):
-        idx = _bisect_with_tuples(self._data, item, singleton=False)
+        idx = bisect.bisect_right(self._low_keys, item) - 1
         if idx != -1:
-            tup = self._data[idx]
-            if tup[0] <= item <= tup[1]:
-                return tup[2]
+            assert self._low_keys[idx] <= item
+            if item <= self._high_keys[idx]:
+                return self._values[idx]
         raise KeyError(item)
 
     def __iter__(self):
-        for k1, k2, v in self._data:
+        for k1, k2, v in zip(self._low_keys, self._high_keys, self._values):
             for k in range(k1, k2+1):
                 yield k
 
@@ -224,4 +214,4 @@ class SortedRangeMap(Mapping):
         return self._len
 
     def __repr__(self):
-        return '%s(len=%d, raw=%r)' % (self.__class__.__qualname__, self._len, self._data)
+        return '%s(len=%d, low_keys=%r, high_keys=%r, values=%r)' % (self.__class__.__qualname__, self._len, self._low_keys, self._high_keys, self._values)
