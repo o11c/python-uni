@@ -281,162 +281,162 @@ class _TestMapBase(unittest.TestCase):
         E = ErrorBool
 
         m = self.cls_from_quads([(1, 1, 101, E), (3, 3, 101, E)])
-        assert [k for k in range(7) if k in m] == [1, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 101), (3, 101)]
         m = self.cls_from_quads([(1, 1, 101, E), (3, 3, 102, E)])
-        assert [k for k in range(7) if k in m] == [1, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 101), (3, 102)]
         m = self.cls_from_quads([(1, 1, 101, E), (3, 3, 103, E)])
-        assert [k for k in range(7) if k in m] == [1, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 101), (3, 103)]
         m = self.cls_from_quads([(1, 1, 101, E), (3, 3, 104, E)])
-        assert [k for k in range(7) if k in m] == [1, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 101), (3, 104)]
 
         m = self.cls_from_quads([(1, 1, 201, E), (3, 4, 201, F)])
-        assert [k for k in range(7) if k in m] == [1, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 201), (3, 201), (4, 201)]
         m = self.cls_from_quads([(1, 1, 201, E), (3, 4, 201, T)])
-        assert [k for k in range(7) if k in m] == [1, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 201), (3, 201), (4, 202)]
         m = self.cls_from_quads([(1, 1, 201, E), (3, 4, 202, F)])
-        assert [k for k in range(7) if k in m] == [1, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 201), (3, 202), (4, 202)]
         m = self.cls_from_quads([(1, 1, 201, E), (3, 4, 202, T)])
-        assert [k for k in range(7) if k in m] == [1, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 201), (3, 202), (4, 203)]
         m = self.cls_from_quads([(1, 1, 201, E), (3, 4, 203, F)])
-        assert [k for k in range(7) if k in m] == [1, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 201), (3, 203), (4, 203)]
         m = self.cls_from_quads([(1, 1, 201, E), (3, 4, 203, T)])
-        assert [k for k in range(7) if k in m] == [1, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 201), (3, 203), (4, 204)]
         m = self.cls_from_quads([(1, 1, 201, E), (3, 4, 204, F)])
-        assert [k for k in range(7) if k in m] == [1, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 201), (3, 204), (4, 204)]
         m = self.cls_from_quads([(1, 1, 201, E), (3, 4, 204, T)])
-        assert [k for k in range(7) if k in m] == [1, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 201), (3, 204), (4, 205)]
 
         m = self.cls_from_quads([(1, 2, 301, F), (4, 4, 301, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 301), (2, 301), (4, 301)]
         m = self.cls_from_quads([(1, 2, 301, T), (4, 4, 301, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 301), (2, 302), (4, 301)]
         m = self.cls_from_quads([(1, 2, 301, F), (4, 4, 302, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 301), (2, 301), (4, 302)]
         m = self.cls_from_quads([(1, 2, 301, T), (4, 4, 302, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 301), (2, 302), (4, 302)]
         m = self.cls_from_quads([(1, 2, 301, F), (4, 4, 303, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 301), (2, 301), (4, 303)]
         m = self.cls_from_quads([(1, 2, 301, T), (4, 4, 303, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 301), (2, 302), (4, 303)]
         m = self.cls_from_quads([(1, 2, 301, F), (4, 4, 304, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 301), (2, 301), (4, 304)]
         m = self.cls_from_quads([(1, 2, 301, T), (4, 4, 304, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 301), (2, 302), (4, 304)]
         m = self.cls_from_quads([(1, 2, 301, F), (4, 4, 305, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 301), (2, 301), (4, 305)]
         m = self.cls_from_quads([(1, 2, 301, T), (4, 4, 305, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 301), (2, 302), (4, 305)]
 
         m = self.cls_from_quads([(1, 2, 401, F), (4, 5, 401, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 401), (4, 401), (5, 401)]
         m = self.cls_from_quads([(1, 2, 401, F), (4, 5, 401, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 401), (4, 401), (5, 402)]
         m = self.cls_from_quads([(1, 2, 401, T), (4, 5, 401, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 402), (4, 401), (5, 401)]
         m = self.cls_from_quads([(1, 2, 401, T), (4, 5, 401, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 402), (4, 401), (5, 402)]
         m = self.cls_from_quads([(1, 2, 401, F), (4, 5, 402, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 401), (4, 402), (5, 402)]
         m = self.cls_from_quads([(1, 2, 401, F), (4, 5, 402, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 401), (4, 402), (5, 403)]
         m = self.cls_from_quads([(1, 2, 401, T), (4, 5, 402, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 402), (4, 402), (5, 402)]
         m = self.cls_from_quads([(1, 2, 401, T), (4, 5, 402, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 402), (4, 402), (5, 403)]
         m = self.cls_from_quads([(1, 2, 401, F), (4, 5, 403, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 401), (4, 403), (5, 403)]
         m = self.cls_from_quads([(1, 2, 401, F), (4, 5, 403, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 401), (4, 403), (5, 404)]
         m = self.cls_from_quads([(1, 2, 401, T), (4, 5, 403, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 402), (4, 403), (5, 403)]
         m = self.cls_from_quads([(1, 2, 401, T), (4, 5, 403, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 402), (4, 403), (5, 404)]
         m = self.cls_from_quads([(1, 2, 401, F), (4, 5, 404, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 401), (4, 404), (5, 404)]
         m = self.cls_from_quads([(1, 2, 401, F), (4, 5, 404, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 401), (4, 404), (5, 405)]
         m = self.cls_from_quads([(1, 2, 401, T), (4, 5, 404, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 402), (4, 404), (5, 404)]
         m = self.cls_from_quads([(1, 2, 401, T), (4, 5, 404, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 402), (4, 404), (5, 405)]
         m = self.cls_from_quads([(1, 2, 401, F), (4, 5, 405, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 401), (4, 405), (5, 405)]
         m = self.cls_from_quads([(1, 2, 401, F), (4, 5, 405, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 401), (4, 405), (5, 406)]
         m = self.cls_from_quads([(1, 2, 401, T), (4, 5, 405, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 402), (4, 405), (5, 405)]
         m = self.cls_from_quads([(1, 2, 401, T), (4, 5, 405, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 4, 5]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 401), (2, 402), (4, 405), (5, 406)]
 
         m = self.cls_from_quads([(1, 1, 501, E), (2, 2, 501, E)])
-        assert [k for k in range(7) if k in m] == [1, 2]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 501), (2, 501)]
         m = self.cls_from_quads([(1, 1, 501, E), (2, 2, 502, E)])
-        assert [k for k in range(7) if k in m] == [1, 2]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 501), (2, 502)]
         m = self.cls_from_quads([(1, 1, 501, E), (2, 2, 503, E)])
-        assert [k for k in range(7) if k in m] == [1, 2]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 501), (2, 503)]
 
         m = self.cls_from_quads([(1, 1, 601, E), (2, 3, 601, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 601), (2, 601), (3, 601)]
         m = self.cls_from_quads([(1, 1, 601, E), (2, 3, 601, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 601), (2, 601), (3, 602)]
         m = self.cls_from_quads([(1, 1, 601, E), (2, 3, 602, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 601), (2, 602), (3, 602)]
         m = self.cls_from_quads([(1, 1, 601, E), (2, 3, 602, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 601), (2, 602), (3, 603)]
         m = self.cls_from_quads([(1, 1, 601, E), (2, 3, 603, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 601), (2, 603), (3, 603)]
         m = self.cls_from_quads([(1, 1, 601, E), (2, 3, 603, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 601), (2, 603), (3, 604)]
 
         m = self.cls_from_quads([(1, 2, 701, F), (3, 3, 701, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 701), (2, 701), (3, 701)]
         m = self.cls_from_quads([(1, 2, 701, T), (3, 3, 701, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 701), (2, 702), (3, 701)]
         m = self.cls_from_quads([(1, 2, 701, F), (3, 3, 702, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 701), (2, 701), (3, 702)]
         m = self.cls_from_quads([(1, 2, 701, T), (3, 3, 702, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 701), (2, 702), (3, 702)]
         m = self.cls_from_quads([(1, 2, 701, F), (3, 3, 703, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 701), (2, 701), (3, 703)]
         m = self.cls_from_quads([(1, 2, 701, T), (3, 3, 703, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 701), (2, 702), (3, 703)]
         m = self.cls_from_quads([(1, 2, 701, F), (3, 3, 704, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 701), (2, 701), (3, 704)]
         m = self.cls_from_quads([(1, 2, 701, T), (3, 3, 704, E)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 701), (2, 702), (3, 704)]
 
         m = self.cls_from_quads([(1, 2, 801, F), (3, 4, 801, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 801), (3, 801), (4, 801)]
         m = self.cls_from_quads([(1, 2, 801, F), (3, 4, 801, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 801), (3, 801), (4, 802)]
         m = self.cls_from_quads([(1, 2, 801, T), (3, 4, 801, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 802), (3, 801), (4, 801)]
         m = self.cls_from_quads([(1, 2, 801, T), (3, 4, 801, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 802), (3, 801), (4, 802)]
         m = self.cls_from_quads([(1, 2, 801, F), (3, 4, 802, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 801), (3, 802), (4, 802)]
         m = self.cls_from_quads([(1, 2, 801, F), (3, 4, 802, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 801), (3, 802), (4, 803)]
         m = self.cls_from_quads([(1, 2, 801, T), (3, 4, 802, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 802), (3, 802), (4, 802)]
         m = self.cls_from_quads([(1, 2, 801, T), (3, 4, 802, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 802), (3, 802), (4, 803)]
         m = self.cls_from_quads([(1, 2, 801, F), (3, 4, 803, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 801), (3, 803), (4, 803)]
         m = self.cls_from_quads([(1, 2, 801, F), (3, 4, 803, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 801), (3, 803), (4, 804)]
         m = self.cls_from_quads([(1, 2, 801, T), (3, 4, 803, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 802), (3, 803), (4, 803)]
         m = self.cls_from_quads([(1, 2, 801, T), (3, 4, 803, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 802), (3, 803), (4, 804)]
         m = self.cls_from_quads([(1, 2, 801, F), (3, 4, 804, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 801), (3, 804), (4, 804)]
         m = self.cls_from_quads([(1, 2, 801, F), (3, 4, 804, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 801), (3, 804), (4, 805)]
         m = self.cls_from_quads([(1, 2, 801, T), (3, 4, 804, F)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 802), (3, 804), (4, 804)]
         m = self.cls_from_quads([(1, 2, 801, T), (3, 4, 804, T)])
-        assert [k for k in range(7) if k in m] == [1, 2, 3, 4]
+        assert [(k, m[k]) for k in range(7) if k in m] == [(1, 801), (2, 802), (3, 804), (4, 805)]
 
         # All together now
         m = self.cls_from_quads([
@@ -523,89 +523,89 @@ class _TestMapBase(unittest.TestCase):
             (1941, 1942, 801, T), (1943, 1944, 804, F),
             (1951, 1952, 801, T), (1953, 1954, 804, T),
         ])
-        assert [k for k in range(1000, 2000) if k in m] == [
-            1001, 1003,
-            1011, 1013,
-            1021, 1023,
-            1031, 1033,
+        assert [(k, m[k]) for k in range(1000, 2000) if k in m] == [
+            (1001, 101), (1003, 101),
+            (1011, 101), (1013, 102),
+            (1021, 101), (1023, 103),
+            (1031, 101), (1033, 104),
 
-            1101, 1103, 1104,
-            1111, 1113, 1114,
-            1121, 1123, 1124,
-            1131, 1133, 1134,
-            1141, 1143, 1144,
-            1151, 1153, 1154,
-            1161, 1163, 1164,
-            1171, 1173, 1174,
+            (1101, 201), (1103, 201), (1104, 201),
+            (1111, 201), (1113, 201), (1114, 202),
+            (1121, 201), (1123, 202), (1124, 202),
+            (1131, 201), (1133, 202), (1134, 203),
+            (1141, 201), (1143, 203), (1144, 203),
+            (1151, 201), (1153, 203), (1154, 204),
+            (1161, 201), (1163, 204), (1164, 204),
+            (1171, 201), (1173, 204), (1174, 205),
 
-            1201, 1202, 1204,
-            1211, 1212, 1214,
-            1221, 1222, 1224,
-            1231, 1232, 1234,
-            1241, 1242, 1244,
-            1251, 1252, 1254,
-            1261, 1262, 1264,
-            1271, 1272, 1274,
-            1281, 1282, 1284,
-            1291, 1292, 1294,
+            (1201, 301), (1202, 301), (1204, 301),
+            (1211, 301), (1212, 302), (1214, 301),
+            (1221, 301), (1222, 301), (1224, 302),
+            (1231, 301), (1232, 302), (1234, 302),
+            (1241, 301), (1242, 301), (1244, 303),
+            (1251, 301), (1252, 302), (1254, 303),
+            (1261, 301), (1262, 301), (1264, 304),
+            (1271, 301), (1272, 302), (1274, 304),
+            (1281, 301), (1282, 301), (1284, 305),
+            (1291, 301), (1292, 302), (1294, 305),
 
-            1301, 1302, 1304, 1305,
-            1311, 1312, 1314, 1315,
-            1321, 1322, 1324, 1325,
-            1331, 1332, 1334, 1335,
-            1341, 1342, 1344, 1345,
-            1351, 1352, 1354, 1355,
-            1361, 1362, 1364, 1365,
-            1371, 1372, 1374, 1375,
-            1381, 1382, 1384, 1385,
-            1391, 1392, 1394, 1395,
-            1401, 1402, 1404, 1405,
-            1411, 1412, 1414, 1415,
-            1421, 1422, 1424, 1425,
-            1431, 1432, 1434, 1435,
-            1441, 1442, 1444, 1445,
-            1451, 1452, 1454, 1455,
-            1461, 1462, 1464, 1465,
-            1471, 1472, 1474, 1475,
-            1481, 1482, 1484, 1485,
-            1491, 1492, 1494, 1495,
+            (1301, 401), (1302, 401), (1304, 401), (1305, 401),
+            (1311, 401), (1312, 401), (1314, 401), (1315, 402),
+            (1321, 401), (1322, 402), (1324, 401), (1325, 401),
+            (1331, 401), (1332, 402), (1334, 401), (1335, 402),
+            (1341, 401), (1342, 401), (1344, 402), (1345, 402),
+            (1351, 401), (1352, 401), (1354, 402), (1355, 403),
+            (1361, 401), (1362, 402), (1364, 402), (1365, 402),
+            (1371, 401), (1372, 402), (1374, 402), (1375, 403),
+            (1381, 401), (1382, 401), (1384, 403), (1385, 403),
+            (1391, 401), (1392, 401), (1394, 403), (1395, 404),
+            (1401, 401), (1402, 402), (1404, 403), (1405, 403),
+            (1411, 401), (1412, 402), (1414, 403), (1415, 404),
+            (1421, 401), (1422, 401), (1424, 404), (1425, 404),
+            (1431, 401), (1432, 401), (1434, 404), (1435, 405),
+            (1441, 401), (1442, 402), (1444, 404), (1445, 404),
+            (1451, 401), (1452, 402), (1454, 404), (1455, 405),
+            (1461, 401), (1462, 401), (1464, 405), (1465, 405),
+            (1471, 401), (1472, 401), (1474, 405), (1475, 406),
+            (1481, 401), (1482, 402), (1484, 405), (1485, 405),
+            (1491, 401), (1492, 402), (1494, 405), (1495, 406),
 
-            1501, 1502,
-            1511, 1512,
-            1521, 1522,
+            (1501, 501), (1502, 501),
+            (1511, 501), (1512, 502),
+            (1521, 501), (1522, 503),
 
-            1601, 1602, 1603,
-            1611, 1612, 1613,
-            1621, 1622, 1623,
-            1631, 1632, 1633,
-            1641, 1642, 1643,
-            1651, 1652, 1653,
+            (1601, 601), (1602, 601), (1603, 601),
+            (1611, 601), (1612, 601), (1613, 602),
+            (1621, 601), (1622, 602), (1623, 602),
+            (1631, 601), (1632, 602), (1633, 603),
+            (1641, 601), (1642, 603), (1643, 603),
+            (1651, 601), (1652, 603), (1653, 604),
 
-            1701, 1702, 1703,
-            1711, 1712, 1713,
-            1721, 1722, 1723,
-            1731, 1732, 1733,
-            1741, 1742, 1743,
-            1751, 1752, 1753,
-            1761, 1762, 1763,
-            1771, 1772, 1773,
+            (1701, 701), (1702, 701), (1703, 701),
+            (1711, 701), (1712, 702), (1713, 701),
+            (1721, 701), (1722, 701), (1723, 702),
+            (1731, 701), (1732, 702), (1733, 702),
+            (1741, 701), (1742, 701), (1743, 703),
+            (1751, 701), (1752, 702), (1753, 703),
+            (1761, 701), (1762, 701), (1763, 704),
+            (1771, 701), (1772, 702), (1773, 704),
 
-            1801, 1802, 1803, 1804,
-            1811, 1812, 1813, 1814,
-            1821, 1822, 1823, 1824,
-            1831, 1832, 1833, 1834,
-            1841, 1842, 1843, 1844,
-            1851, 1852, 1853, 1854,
-            1861, 1862, 1863, 1864,
-            1871, 1872, 1873, 1874,
-            1881, 1882, 1883, 1884,
-            1891, 1892, 1893, 1894,
-            1901, 1902, 1903, 1904,
-            1911, 1912, 1913, 1914,
-            1921, 1922, 1923, 1924,
-            1931, 1932, 1933, 1934,
-            1941, 1942, 1943, 1944,
-            1951, 1952, 1953, 1954,
+            (1801, 801), (1802, 801), (1803, 801), (1804, 801),
+            (1811, 801), (1812, 801), (1813, 801), (1814, 802),
+            (1821, 801), (1822, 802), (1823, 801), (1824, 801),
+            (1831, 801), (1832, 802), (1833, 801), (1834, 802),
+            (1841, 801), (1842, 801), (1843, 802), (1844, 802),
+            (1851, 801), (1852, 801), (1853, 802), (1854, 803),
+            (1861, 801), (1862, 802), (1863, 802), (1864, 802),
+            (1871, 801), (1872, 802), (1873, 802), (1874, 803),
+            (1881, 801), (1882, 801), (1883, 803), (1884, 803),
+            (1891, 801), (1892, 801), (1893, 803), (1894, 804),
+            (1901, 801), (1902, 802), (1903, 803), (1904, 803),
+            (1911, 801), (1912, 802), (1913, 803), (1914, 804),
+            (1921, 801), (1922, 801), (1923, 804), (1924, 804),
+            (1931, 801), (1932, 801), (1933, 804), (1934, 805),
+            (1941, 801), (1942, 802), (1943, 804), (1944, 804),
+            (1951, 801), (1952, 802), (1953, 804), (1954, 805),
         ]
 
 
