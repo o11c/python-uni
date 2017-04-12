@@ -2,9 +2,18 @@ test-fast:
 test-slow:
 test: test-fast test-slow
 
+test-fast: test-unittest
+test-unittest:
+	python3 -m unittest
+
+test-fast: test-nose
+test-nose:
+	python3 -m nose
+
 test-fast: test-pytest
 test-pytest:
-	python3 -m pytest
+	python3 -m pytest --cov=.
+	coverage html
 
 test-fast: test-copyright
 test-copyright:

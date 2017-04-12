@@ -37,3 +37,44 @@ class ClassDict(collections.abc.MutableMapping):
 
     def __len__(self):
         return len(self.dct)
+
+
+class MinIter:
+    def __init__(self, *iterables):
+        self._iterators = []
+        self._values = []
+        for iterable in iterables:
+            iterator = iter(iterable)
+            try:
+                value = next(iterator)
+            except StopIteration:
+                continue
+            self._iterators.append(iterator)
+            self._values.append(value)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if not self._values:
+            raise StopIteration
+        idx = min(range(len(self._values)), key=lambda i: self._values[i])
+        rv = self._values[idx]
+        try:
+            self._values[idx] = next(self._iterators[idx])
+        except StopIteration:
+            del self._iterators[idx]
+            del self._values[idx]
+        return rv
+
+
+class ErrorBoolType:
+    def __new__(cls):
+        return ErrorBool
+    def __repr__(self):
+        return 'ErrorBool'
+    def __bool__(self):
+        raise AssertionError('I should not be used as a bool!')
+
+
+ErrorBool = object.__new__(ErrorBoolType)
