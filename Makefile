@@ -1,24 +1,50 @@
+PYTHON = python3
+
+default: test-fast test-coverage-fast
+
 test-fast:
 test-slow:
 test: test-fast test-slow
 
 test-fast: test-unittest
 test-unittest:
-	python3 -m unittest
+	${PYTHON} -m unittest
 
 test-fast: test-nose
 test-nose:
-	python3 -m nose
+	${PYTHON} -m nose
 
 test-fast: test-pytest
-test-pytest:
-	python3 -m pytest --cov=.
-	coverage html
+test-coverage: test-pytest
+test-coverage-fast: test-pytest
+test-pytest: clean-coverage
+	${PYTHON} -m coverage run -p --source=. -m pytest
 
 test-fast: test-copyright
 test-copyright:
 	find -name '*.py' -print0 | xargs -0 -n 1 grep -L -w Copyright
 
 test-slow: test-schema
-test-schema:
-	python3 -m uni.txt.schema ucd/**/*.txt > /dev/null
+test-coverage: test-schema
+test-schema: clean-coverage
+	${PYTHON} -m coverage run -p --source=. -m uni.txt.schema --sample ucd/9.0.0/ArabicShaping.txt > /dev/null
+	${PYTHON} -m coverage run -p --source=. -m uni.txt.schema `find ucd/ -name '*.txt' | sort` > /dev/null
+
+test-coverage-fast: test-schema-fast
+test-schema-fast: clean-coverage
+	${PYTHON} -m coverage run -p --source=. -m uni.txt.schema --sample `find ucd/ -name '*.txt' | sort` > /dev/null
+
+test-slow: test-coverage
+test-coverage:
+	${PYTHON} -m coverage combine
+	${PYTHON} -m coverage html
+	${PYTHON} -m coverage report --fail-under=100
+# not usually called, but useful for development
+test-coverage-fast:
+	${PYTHON} -m coverage combine
+	${PYTHON} -m coverage html --skip-covered
+	${PYTHON} -m coverage report --skip-covered --fail-under=100
+
+clean-coverage:
+	rm -f .coverage
+	rm -rf htmlcov

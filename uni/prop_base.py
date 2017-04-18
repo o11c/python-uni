@@ -41,7 +41,7 @@ class _Property:
     '''
     def __new__(cls, *args, **kwargs):
         if not issubclass(cls, _InstantiableProperty):
-            raise NotImplementedError('most property classes are not instantiable')
+            raise NotImplementedError('most property classes are not instantiable') # pragma: no cover
         return object.__new__(cls)
 
     def __init__(self):
@@ -49,11 +49,11 @@ class _Property:
 
     @classmethod
     def check(cls, val):
-        raise NotImplementedError('Needs to be implemented in subclasses!')
+        raise NotImplementedError('Needs to be implemented in subclasses!') # pragma: no cover
 
     @classmethod
     def convert(cls, val):
-        raise NotImplementedError('Needs to be implemented in subclasses!')
+        raise NotImplementedError('Needs to be implemented in subclasses!') # pragma: no cover
 
 
 class List(_Property):
@@ -66,13 +66,14 @@ class List(_Property):
         assert issubclass(cls.element, _Property)
         assert isinstance(val, list)
         for v in val:
-            assert cls.element.check(v)
+            cls.element.check(v)
+        return val
 
     @classmethod
     def convert(cls, val):
         assert issubclass(cls.element, _Property)
         assert isinstance(val, str)
-        return [cls.element.convert(v) for v in _split(val)]
+        return cls.check([cls.element.convert(v) for v in _split(val)])
 
 
 # TODO actually optimize using bitsets when possible.
@@ -86,7 +87,8 @@ class Set(_Property):
         assert issubclass(cls.element, _Property)
         assert isinstance(val, set)
         for v in val:
-            assert v is cls.element.filter(v)
+            cls.element.check(v)
+        return val
 
     @classmethod
     def convert(cls, val):
@@ -95,7 +97,7 @@ class Set(_Property):
         rvl = [cls.element.convert(v) for v in _split(val)]
         rv = set(rvl)
         assert len(rv) == len(rvl)
-        return rv
+        return cls.check(rv)
 
 
 class TaggedItem(_Property):
@@ -108,8 +110,10 @@ class TaggedItem(_Property):
         assert issubclass(cls.tag, _Property)
         assert issubclass(cls.payload, _Property)
         assert isinstance(val, tuple)
-        cls.tag.check(val[0])
+        if val[0] is not None:
+            cls.tag.check(val[0])
         cls.payload.check(val[1])
+        return val
 
     @classmethod
     def convert(cls, val):
@@ -120,8 +124,8 @@ class TaggedItem(_Property):
             t, p = val.split(' ', 1)
             if t.startswith('<') and t.endswith('>'):
                 t = t[1:-1]
-                return (cls.tag.convert(t), cls.payload.convert(p))
-        return (None, cls.payload.convert(val))
+                return cls.check((cls.tag.convert(t), cls.payload.convert(p)))
+        return cls.check((None, cls.payload.convert(val)))
 
 
 class _EnumLikeProperty(_Property):
@@ -130,7 +134,8 @@ class _EnumLikeProperty(_Property):
     @classmethod
     def check(cls, val):
         #assert isinstance(val, cls)
-        assert val in cls.value_set
+        assert val in cls.value_set, val
+        return val
 
     @classmethod
     def convert(cls, val):
@@ -138,7 +143,7 @@ class _EnumLikeProperty(_Property):
         by_name = cls.value_by_name
         val = _casefold(val)
         assert val in by_name, (cls.__name__, val)
-        return by_name[val.casefold()]
+        return cls.check(by_name[val.casefold()])
 
 
 class PropertyPerSe(_EnumLikeProperty):
@@ -156,6 +161,7 @@ class _InstantiableProperty(_EnumLikeProperty):
         New subclasses are created dynamically by make_enum.
     '''
     def __init__(self, index, aliases, *, manual_index):
+        super().__init__()
         self.value_aliases = aliases
         self.short_value_name = aliases[manual_index + 0]
         self.long_value_name = aliases[manual_index + (len(aliases) > manual_index + 1)]
@@ -204,11 +210,12 @@ class Int(_Property):
     @classmethod
     def check(cls, val):
         assert isinstance(val, int)
+        return val
 
     @classmethod
     def convert(cls, val):
         assert isinstance(val, str)
-        return int(val)
+        return cls.check(int(val))
 
 
 class Rational(_Property):
@@ -217,11 +224,12 @@ class Rational(_Property):
     @classmethod
     def check(cls, val):
         assert isinstance(val, fractions.Fraction)
+        return val
 
     @classmethod
     def convert(cls, val):
         assert isinstance(val, str)
-        return fractions.Fraction(val)
+        return cls.check(fractions.Fraction(val))
 
 
 class Decimal(_Property):
@@ -232,11 +240,12 @@ class Decimal(_Property):
     @classmethod
     def check(cls, val):
         assert isinstance(val, decimal.Decimal)
+        return val
 
     @classmethod
     def convert(cls, val):
         assert isinstance(val, str)
-        return decimal.Decimal(val)
+        return cls.check(decimal.Decimal(val))
 
 
 class RawString(_Property):
@@ -245,11 +254,12 @@ class RawString(_Property):
     @classmethod
     def check(cls, val):
         assert isinstance(val, str)
+        return val
 
     @classmethod
     def convert(cls, val):
         assert isinstance(val, str)
-        return val
+        return cls.check(val)
 
 
 class X_Version(_Property):
@@ -260,12 +270,13 @@ class X_Version(_Property):
     @classmethod
     def check(cls, val):
         assert isinstance(val, versioning.Version)
+        return val
 
     @classmethod
     def convert(cls, val):
         assert isinstance(val, str)
         val.count('.') == 2
-        return versioning.parse(val)
+        return cls.check(versioning.parse(val))
 
 
 class Regex(_Property):
@@ -275,12 +286,12 @@ class Regex(_Property):
     def check(cls, val):
         val = unicodedata.normalize('NFD', val)
         assert isinstance(val, str) and cls.regex.fullmatch(val), (cls.__name__, cls.regex, val)
+        return val
 
     @classmethod
     def convert(cls, val):
         assert isinstance(val, str)
-        cls.check(val)
-        return val
+        return cls.check(val)
 
 
 class Codepoint(_Property):
@@ -289,12 +300,14 @@ class Codepoint(_Property):
     @classmethod
     def check(cls, val):
         assert isinstance(val, int)
+        assert 0 <= val < 0x110000
+        return val
 
     @classmethod
     def convert(cls, val):
         assert isinstance(val, str)
         assert 4 <= len(val) <= 6, val
-        return int(val, 16)
+        return cls.check(int(val, 16))
 
 
 class CodepointGlob(_Property):
@@ -310,14 +323,16 @@ class CodepointGlob(_Property):
     @classmethod
     def check(cls, val):
         assert isinstance(val, list)
-        assert all([isinstance(v, int) for v in val])
+        for v in val:
+            Codepoint.check(v)
+        return val
 
     @classmethod
     def convert(cls, val):
         assert isinstance(val, str)
         if '*' in val:
             return cls.known_globs[val]
-        return [Codepoint.convert(val)]
+        return cls.check([Codepoint.convert(val)])
 
 
 class CodepointRange(_Property):
@@ -327,8 +342,9 @@ class CodepointRange(_Property):
     def check(cls, val):
         assert isinstance(val, tuple)
         assert len(val) == 2
-        assert isinstance(val[0], int)
-        assert isinstance(val[1], int)
+        assert isinstance(Codepoint.check(val[0]), int)
+        assert isinstance(Codepoint.check(val[1]), int)
+        return val
 
     @classmethod
     def convert(cls, val):
@@ -338,7 +354,7 @@ class CodepointRange(_Property):
             assert low != high
         else:
             low = high = val
-        return Codepoint.convert(low), Codepoint.convert(high)
+        return cls.check((Codepoint.convert(low), Codepoint.convert(high)))
 
 
 class CodepointSequence(_Property):
@@ -347,12 +363,12 @@ class CodepointSequence(_Property):
     @classmethod
     def check(cls, val):
         assert isinstance(val, str)
+        return val
 
     @classmethod
     def convert(cls, val):
         assert isinstance(val, str)
-        assert all([4 <= len(cp) <= 6 for cp in _split(val)]), val
-        return ''.join([chr(int(cp, 16)) for cp in _split(val)])
+        return cls.check(''.join([chr(Codepoint.convert(cp)) for cp in _split(val)]))
 
 
 class U_Codepoint(_Property):
@@ -361,12 +377,13 @@ class U_Codepoint(_Property):
     @classmethod
     def check(cls, val):
         assert isinstance(val, int)
+        return val
 
     @classmethod
     def convert(cls, val):
         assert isinstance(val, str)
         assert val.startswith('U+'), val
-        return Codepoint.convert(val[2:])
+        return cls.check(Codepoint.convert(val[2:]))
 
 
 def unique_aliases(aliases, *, casefold):

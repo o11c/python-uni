@@ -20,11 +20,6 @@ from collections.abc import Set, Mapping
 from .._util import ErrorBool, MinIter
 
 
-def round_up_to_pow2(x):
-    assert x > 0
-    return 1 << (x-1).bit_length()
-
-
 def adjacent(left, right, *, step=1):
     try:
         check = left + step

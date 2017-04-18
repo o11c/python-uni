@@ -13,6 +13,7 @@
 #
 #   You should have received a copy of the GNU Lesser General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import abc
 import numpy as np
 import unittest
 
@@ -21,7 +22,7 @@ from uni.mem.sorted import SortedMap, RangeMap, DeltaMap, AutoMap
 from uni._util import ErrorBool
 
 
-class _TestSetBase(unittest.TestCase):
+class _TestSetBase(unittest.TestCase, metaclass=abc.ABCMeta):
     cls = None
     need_int_key = False
 
@@ -96,8 +97,9 @@ class _TestSetBase(unittest.TestCase):
         return rv
 
     @staticmethod
+    @abc.abstractmethod
     def append_range(self, low_key, high_key):
-        raise NotImplementedError
+        pass # pragma: no cover
 
     def test_harder(self):
         # important key patterns:
@@ -150,7 +152,7 @@ class _TestSetBase(unittest.TestCase):
         ]
 
 
-class _TestMapBase(unittest.TestCase):
+class _TestMapBase(unittest.TestCase, metaclass=abc.ABCMeta):
     cls = None
     need_int_key = False
     need_int_value = False
@@ -248,8 +250,9 @@ class _TestMapBase(unittest.TestCase):
         return rv
 
     @staticmethod
+    @abc.abstractmethod
     def append_quad(self, low_key, high_key, value, is_delta):
-        raise NotImplementedError
+        pass # pragma: no cover
 
     def test_harder(self):
         # important key patterns:

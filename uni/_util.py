@@ -14,6 +14,7 @@
 #   You should have received a copy of the GNU Lesser General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import collections.abc
+import os
 
 
 class ClassDict(collections.abc.MutableMapping):
@@ -68,13 +69,50 @@ class MinIter:
         return rv
 
 
+class ProgrammerIsAnIdiotError(AssertionError):
+    pass
+
+
 class ErrorBoolType:
     def __new__(cls):
         return ErrorBool
+
     def __repr__(self):
         return 'ErrorBool'
+
     def __bool__(self):
-        raise AssertionError('I should not be used as a bool!')
+        raise ProgrammerIsAnIdiotError('I should not be used as a bool!')
 
 
 ErrorBool = object.__new__(ErrorBoolType)
+
+
+def ordered_sample(col, k):
+    ''' Like random.sample, but preserving order.
+    '''
+    import random
+    indices = random.sample(range(len(col)), k)
+    indices.sort()
+    return [col[i] for i in indices]
+
+
+# There are more, but these are the only common ones.
+_recursive_extensions = {
+    '.Z',
+    '.bz2',
+    '.gz',
+    '.xz',
+}
+
+
+def split_ext_harder(fn):
+    base = fn
+    exts = []
+    while True:
+        base, ext = os.path.splitext(base)
+        if ext:
+            exts.append(ext)
+        if ext not in _recursive_extensions:
+            break
+    exts.reverse()
+    return base, exts

@@ -6,8 +6,8 @@ python:
   - 3.5
   - 3.6
 install:
-  - pip install pytest-cov
+  - pip install coverage
 script:
-  - make test
+  - make test -j`nproc`
 notifications:
   irc: "irc.freenode.org#o11c"

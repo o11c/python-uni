@@ -18,6 +18,7 @@ import os
 
 from .. import prop_base as base, prop_alias as alias, versioning
 from ..versioning import parse as v
+from .._util import split_ext_harder
 
 
 _schemas = {}
@@ -61,17 +62,20 @@ class Schema:
             num_fields += '+%d*' % len(self.repeat_fields)
         return '<Schema (%s) since %r for %r>' % (num_fields, self.min_unicode_version, self.name)
 
-    def load(self, fo, version):
-        assert self.min_unicode_version <= version <= self.max_unicode_version, (fo.name, version)
+    def load(self, fo, version, *, name=None):
+        if name is None:
+            name = fo.name
+        assert self.min_unicode_version <= version <= self.max_unicode_version, (name, version)
         for line in fo:
             assert line[-1] == '\n' or (line, self.name, version) in (
                 ('\t', 'Blocks', v('0.0.0')),
                 ('U+', 'Unihan', v('0.0.0')),
-            ), (fo.name, line)
+            ), (name, line)
             line = line[:-1]
             if line.endswith('\r') and False:
-                line = line[:-1]
-            assert '\r' not in line, (fo.name, line)
+                # TODO: turn off "universal newlines" support and check this.
+                line = line[:-1] # pragma: no cover
+            assert '\r' not in line, (name, line)
             if self.comments or (self.name, version) in (
                     ('UnicodeData', v('1.0.0')),
                     ('UnicodeData', v('1.0.1')),
@@ -82,8 +86,8 @@ class Schema:
                 if not line:
                     continue
             else:
-                assert '#' not in line, (fo.name, line)
-            assert '"' not in line, (fo.name, line)
+                assert '#' not in line, (name, line)
+            assert '"' not in line, (name, line)
             fields = line.split(self.separator)
             if self.spaces or (self.name, version) in (
                     ('UnicodeData', v('1.1.5')),
@@ -95,13 +99,13 @@ class Schema:
             ):
                 fields = [f.strip() for f in fields]
             else:
-                assert all([f == f.strip() for f in fields]), (fo.name, line)
+                assert all([f == f.strip() for f in fields]), (name, line)
             if self.terminator:
                 assert fields[-1] == ''
                 fields.pop()
-            assert len(self.required_fields) <= len(fields), (fo.name, line)
+            assert len(self.required_fields) <= len(fields), (name, line)
             if not self.repeat_fields:
-                assert len(fields) <= len(self.required_fields) + len(self.opt_fields), (fo.name, line)
+                assert len(fields) <= len(self.required_fields) + len(self.opt_fields), (name, line)
             i = 0
             if self.required_fields:
                 for i, c in enumerate(self.required_fields, 0):
@@ -127,7 +131,7 @@ class Schema:
                 i = i0
                 fields[i:] = [fields[i:]] # ensure that the result is fixed-length
                 i += 1
-            assert i == len(fields), (i, len(fields), fo.name, line)
+            assert i == len(fields), (i, len(fields), name, line)
             if self.name == 'UnicodeData':
                 if fields[1].endswith(', First>'):
                     # See how much simpler it is when we don't have to deal with everything?
@@ -391,46 +395,32 @@ def _init_schemas():
 _init_schemas()
 
 
-# There are more, but these are the only common ones.
-_recursive_extensions = {
-    '.Z',
-    '.bz2',
-    '.gz',
-    '.xz',
-}
-def split_ext_harder(fn, ext2=''):
-    base, ext = os.path.splitext(fn)
-    if ext in _recursive_extensions:
-        return split_ext_harder(base, ext + ext2)
-    return base, ext + ext2
-
-
 def get_schema_info(fn):
     ''' Return a tuple (schema_name, file_extension, version)
     '''
     fn = os.path.realpath(fn)
     sn = os.path.basename(fn)
-    sn, ext = split_ext_harder(sn)
+    sn, exts = split_ext_harder(sn)
     ver = ''
     if '-' in sn:
-        sn, ver = sn.split('-', 1)
+        sn, ver = sn.split('-', 1) # pragma: no cover
     if ver.count('.') != 2:
         d = os.path.dirname(fn)
         ver = os.path.basename(d)
-        if ver in ('charts', 'images', 'ucdxml'):
+        if ver in ('charts', 'images', 'ucdxml'): # pragma: no cover
             sn = '%s/%s' % (ver, sn)
             d = os.path.dirname(d)
             ver = os.path.basename(d)
         elif ver in ('auxiliary', 'extracted'):
             d = os.path.dirname(d)
             ver = os.path.basename(d)
-        if ver == ('ucd'):
+        if ver == ('ucd'): # pragma: no cover
             d = os.path.dirname(d)
             ver = os.path.basename(d)
         ver = ver.replace('-Update', '.0') # DTRT for `-Update` and `-Update1`
     assert ver.count('.') == 2, fn
     ver = v(ver)
-    return sn, ext, ver
+    return sn, ''.join(exts), ver
 
 
 _old_encodings = {
@@ -471,11 +461,11 @@ def get_encoding(sn, ext, ver):
     '''
     errors = 'strict'
     if (sn, ext, ver) == ('Unihan', '.txt', v('3.1.0')):
-        errors = 'replace'
+        errors = 'replace' # pragma: no cover
     x = _extensions.get(ext)
     assert x is not None, (sn, ext, ver)
     if not x:
-        return None, errors
+        return None, errors # pragma: no cover
     # 9.0.0 added utf-8 to the comments in all files that have them.
     enc, fix_ver = _old_encodings.get(sn, ('ascii', v('9.0.0')))
     if ver < fix_ver:
@@ -483,20 +473,27 @@ def get_encoding(sn, ext, ver):
     return 'utf-8', errors
 
 
-def main_dump_file(fn):
+def main_dump_file(fn, sample):
     sn, ext, ver = get_schema_info(fn)
     encoding, errors = get_encoding(sn, ext, ver)
     print('#', sn, ver, encoding)
-    if 1: return
     if encoding is None:
-        return
+        return # pragma: no cover
     if sn.startswith('diff') or ext.lower() != '.txt':
-        return
+        return # pragma: no cover
     schema = _schemas[sn]
     if schema is None:
         return
+    repr(schema)
     with open(fn, encoding=encoding, errors=errors, newline='') as fo:
-        for fields in schema.load(fo, ver):
+        name = None
+        if sample and sn not in {'PropertyAliases', 'PropertyValueAliases', 'UnicodeData', 'Index'}:
+            from .._util import ordered_sample
+            name = fo.name
+            fo = [x for x in fo if x.split('#', 1)[0].strip()]
+            if len(fo) > 100:
+                fo = ordered_sample(fo, 100)
+        for fields in schema.load(fo, ver, name=name):
             print(*[repr(f) for f in fields])
 
 
@@ -504,12 +501,15 @@ def main(files=None, exe=None):
     import sys
     if files is None:
         files = sys.argv[1:]
+    sample = files[0] == '--sample'
+    if sample:
+        del files[0]
     if exe is None:
         exe = sys.argv[0]
     if not files or any([fn.startswith('-') for fn in files]):
-        sys.exit('Usage: %s ucd/*.txt' % exe)
+        sys.exit('Usage: %s [--sample] ucd/*.txt' % exe) # pragma: no cover
     for fn in files:
-        main_dump_file(fn)
+        main_dump_file(fn, sample=sample)
 
 
 if __name__ == '__main__':
