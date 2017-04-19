@@ -13,10 +13,10 @@
 #
 #   You should have received a copy of the GNU Lesser General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# TODO replace with cache-friendly bsearch ordering.
-import bisect
 from collections.abc import Set, Mapping
+import importlib
 
+_algo = importlib.import_module(__name__.replace('.mem.', '.mem._'))
 from .._util import ErrorBool, MinIter
 
 
@@ -31,43 +31,61 @@ def adjacent(left, right, *, step=1):
 class SortedSet(Set):
     ''' Simple binary-search set.
     '''
-    def __init__(self, iterable=None):
+    def __init__(self, iterable=None, *, freeze=True):
         self._len = 0
         self._keys = []
+        self._frozen = False
         if iterable is not None:
             iterable = sorted(iterable)
             for key in iterable:
                 self._append(key)
+            if freeze:
+                self._freeze()
 
     def _append(self, key):
+        assert not self._frozen
         assert not self._len or self._keys[-1] < key
         self._keys.append(key)
         self._len += 1
 
     def _pop(self):
+        assert not self._frozen
         self._keys.pop()
         self._len -= 1
+
+    def _freeze(self):
+        assert not self._frozen
+        self._frozen = True
+        self._keys = _algo.freeze(self._keys)
 
     @classmethod
     def _from_raw(cls, len, keys):
         self = cls.__new__(cls)
         self._len = len
         self._keys = keys
+        self._frozen = True
         return self
 
     def _to_raw(self):
+        assert self._frozen or not self._len
         return self._len, self._keys
 
     def __contains__(self, item):
-        idx = bisect.bisect_right(self._keys, item) - 1
+        assert self._frozen or not self._len
+        idx = _algo.search(self._keys, item)
         if idx != -1:
             assert self._keys[idx] <= item
             if item == self._keys[idx]:
                 return True
         return False
 
+    def _iter_tuples(self):
+        _keys = self._keys
+        for idx in _algo.iter_forward(len(_keys)):
+            yield (_keys[idx],)
+
     def __iter__(self):
-        for k, in zip(self._keys):
+        for k, in self._iter_tuples():
             yield k
 
     def __len__(self):
@@ -80,16 +98,20 @@ class SortedSet(Set):
 class RangeSet(Set):
     ''' Compressed binary-search set.
     '''
-    def __init__(self, iterable=None):
+    def __init__(self, iterable=None, *, freeze=True):
         self._len = 0
         self._low_keys = []
         self._high_keys = []
+        self._frozen = False
         if iterable is not None:
             iterable = sorted(iterable)
             for key in iterable:
                 self._append_range(key, key)
+            if freeze:
+                self._freeze()
 
     def _append_range(self, low_key, high_key):
+        assert not self._frozen
         assert not self._len or self._high_keys[-1] < low_key
         assert low_key <= high_key
         if self._len and self._high_keys[-1] + 1 == low_key:
@@ -99,27 +121,42 @@ class RangeSet(Set):
             self._high_keys.append(high_key)
         self._len += high_key - low_key + 1
 
+    def _freeze(self):
+        assert not self._frozen
+        self._frozen = True
+        self._low_keys = _algo.freeze(self._low_keys)
+        self._high_keys = _algo.freeze(self._high_keys)
+
     @classmethod
     def _from_raw(cls, len, low_keys, high_keys):
         self = cls.__new__(cls)
         self._len = len
         self._low_keys = low_keys
         self._high_keys = high_keys
+        self._frozen = True
         return self
 
     def _to_raw(self):
+        assert self._frozen or not self._len
         return self._len, self._low_keys, self._high_keys
 
     def __contains__(self, item):
-        idx = bisect.bisect_right(self._low_keys, item) - 1
+        assert self._frozen or not self._len
+        idx = _algo.search(self._low_keys, item)
         if idx != -1:
             assert self._low_keys[idx] <= item
             if item <= self._high_keys[idx]:
                 return True
         return False
 
+    def _iter_tuples(self):
+        _low_keys = self._low_keys
+        _high_keys = self._high_keys
+        for idx in _algo.iter_forward(len(_low_keys)):
+            yield (_low_keys[idx], _high_keys[idx])
+
     def __iter__(self):
-        for k1, k2 in zip(self._low_keys, self._high_keys):
+        for k1, k2 in self._iter_tuples():
             for k in range(k1, k2+1):
                 yield k
 
@@ -133,13 +170,15 @@ class RangeSet(Set):
 class AutoSet(Set):
     ''' Multi-strategy binary-search set.
     '''
-    def __init__(self, iterable=None):
+    def __init__(self, iterable=None, *, freeze=True):
         self._simple = SortedSet()
         self._compressed = RangeSet()
         if iterable is not None:
             iterable = sorted(iterable)
             for key in iterable:
                 self._append_range(key, key)
+            if freeze:
+                self._freeze()
 
     def _append_range(self, low_key, high_key):
         assert not self._simple._len or self._simple._keys[-1] < low_key
@@ -154,6 +193,10 @@ class AutoSet(Set):
             self._compressed._append_range(low_key, high_key)
             return
         self._simple._append(low_key)
+
+    def _freeze(self):
+        self._simple._freeze()
+        self._compressed._freeze()
 
     @classmethod
     def _from_raw(cls, simple_raw, compressed_raw):
@@ -181,27 +224,38 @@ class AutoSet(Set):
 class SortedMap(Mapping):
     ''' Simple binary-search dict.
     '''
-    def __init__(self, iterable=None):
+    def __init__(self, iterable=None, *, freeze=True):
         self._len = 0
         self._keys = []
         self._values = []
+        self._frozen = False
         if iterable is not None:
             if isinstance(iterable, Mapping):
                 iterable = iterable.items()
             iterable = sorted(iterable)
             for key, value in iterable:
                 self._append(key, value)
+            if freeze:
+                self._freeze()
 
     def _append(self, key, value):
+        assert not self._frozen
         assert not self._len or self._keys[-1] < key
         self._keys.append(key)
         self._values.append(value)
         self._len += 1
 
     def _pop(self):
+        assert not self._frozen
         self._keys.pop()
         self._values.pop()
         self._len -= 1
+
+    def _freeze(self):
+        assert not self._frozen
+        self._frozen = True
+        self._keys = _algo.freeze(self._keys)
+        self._values = _algo.freeze(self._values)
 
     @classmethod
     def _from_raw(cls, len, keys, values):
@@ -209,21 +263,30 @@ class SortedMap(Mapping):
         self._len = len
         self._keys = keys
         self._values = values
+        self._frozen = True
         return self
 
     def _to_raw(self):
+        assert self._frozen or not self._len
         return self._len, self._keys, self._values
 
     def __getitem__(self, item):
-        idx = bisect.bisect_right(self._keys, item) - 1
+        assert self._frozen or not self._len
+        idx = _algo.search(self._keys, item)
         if idx != -1:
             assert self._keys[idx] <= item
             if item == self._keys[idx]:
                 return self._values[idx]
         raise KeyError(item)
 
+    def _iter_tuples(self):
+        _keys = self._keys
+        _values = self._values
+        for idx in _algo.iter_forward(len(_keys)):
+            yield (_keys[idx], _values[idx])
+
     def __iter__(self):
-        for k, v in zip(self._keys, self._values):
+        for k, v in self._iter_tuples():
             yield k
 
     def __len__(self):
@@ -236,31 +299,23 @@ class SortedMap(Mapping):
 class RangeMap(Mapping):
     ''' Compressed binary-search dict (for equal values).
     '''
-    def __init__(self, iterable=None):
+    def __init__(self, iterable=None, *, freeze=True):
         self._len = 0
         self._low_keys = []
         self._high_keys = []
         self._values = []
+        self._frozen = False
         if iterable is not None:
             if isinstance(iterable, Mapping):
                 iterable = iterable.items()
             iterable = sorted(iterable)
             for key, value in iterable:
                 self._append_range(key, key, value)
-
-    @classmethod
-    def _from_raw(cls, len, low_keys, high_keys, values):
-        self = cls.__new__(cls)
-        self._len = len
-        self._low_keys = low_keys
-        self._high_keys = high_keys
-        self._values = values
-        return self
-
-    def _to_raw(self):
-        return self._len, self._low_keys, self._high_keys, self._values
+            if freeze:
+                self._freeze()
 
     def _append_range(self, low_key, high_key, value):
+        assert not self._frozen
         assert not self._len or self._high_keys[-1] < low_key
         assert low_key <= high_key
         if self._len and self._high_keys[-1] + 1 == low_key and self._values[-1] == value:
@@ -272,21 +327,51 @@ class RangeMap(Mapping):
         self._len += high_key - low_key + 1
 
     def _pop_range(self):
+        assert not self._frozen
         low_key = self._low_keys.pop()
         high_key = self._high_keys.pop()
         self._values.pop()
         self._len -= high_key - low_key + 1
 
+    def _freeze(self):
+        assert not self._frozen
+        self._frozen = True
+        self._low_keys = _algo.freeze(self._low_keys)
+        self._high_keys = _algo.freeze(self._high_keys)
+        self._values = _algo.freeze(self._values)
+
+    @classmethod
+    def _from_raw(cls, len, low_keys, high_keys, values):
+        self = cls.__new__(cls)
+        self._len = len
+        self._low_keys = low_keys
+        self._high_keys = high_keys
+        self._values = values
+        self._frozen = True
+        return self
+
+    def _to_raw(self):
+        assert self._frozen or not self._len
+        return self._len, self._low_keys, self._high_keys, self._values
+
     def __getitem__(self, item):
-        idx = bisect.bisect_right(self._low_keys, item) - 1
+        assert self._frozen or not self._len
+        idx = _algo.search(self._low_keys, item)
         if idx != -1:
             assert self._low_keys[idx] <= item
             if item <= self._high_keys[idx]:
                 return self._values[idx]
         raise KeyError(item)
 
+    def _iter_tuples(self):
+        _low_keys = self._low_keys
+        _high_keys = self._high_keys
+        _values = self._values
+        for idx in _algo.iter_forward(len(self._low_keys)):
+            yield (_low_keys[idx], _high_keys[idx], _values[idx])
+
     def __iter__(self):
-        for k1, k2, v in zip(self._low_keys, self._high_keys, self._values):
+        for k1, k2, v in self._iter_tuples():
             for k in range(k1, k2+1):
                 yield k
 
@@ -300,31 +385,23 @@ class RangeMap(Mapping):
 class DeltaMap(Mapping):
     ''' Compressed binary-search dict (for sequential values).
     '''
-    def __init__(self, iterable=None):
+    def __init__(self, iterable=None, *, freeze=True):
         self._len = 0
         self._low_keys = []
         self._high_keys = []
         self._values = []
+        self._frozen = False
         if iterable is not None:
             if isinstance(iterable, Mapping):
                 iterable = iterable.items()
             iterable = sorted(iterable)
             for key, value in iterable:
                 self._append_range(key, key, value)
-
-    @classmethod
-    def _from_raw(cls, len, low_keys, high_keys, values):
-        self = cls.__new__(cls)
-        self._len = len
-        self._low_keys = low_keys
-        self._high_keys = high_keys
-        self._values = values
-        return self
-
-    def _to_raw(self):
-        return self._len, self._low_keys, self._high_keys, self._values
+            if freeze:
+                self._freeze()
 
     def _append_range(self, low_key, high_key, value):
+        assert not self._frozen
         assert not self._len or self._high_keys[-1] < low_key
         assert low_key <= high_key
         if self._len and self._high_keys[-1] + 1 == low_key and self._values[-1] + (low_key - self._low_keys[-1]) == value:
@@ -336,21 +413,51 @@ class DeltaMap(Mapping):
         self._len += high_key - low_key + 1
 
     def _pop_range(self):
+        assert not self._frozen
         low_key = self._low_keys.pop()
         high_key = self._high_keys.pop()
         self._values.pop()
         self._len -= high_key - low_key + 1
 
+    def _freeze(self):
+        assert not self._frozen
+        self._frozen = True
+        self._low_keys = _algo.freeze(self._low_keys)
+        self._high_keys = _algo.freeze(self._high_keys)
+        self._values = _algo.freeze(self._values)
+
+    @classmethod
+    def _from_raw(cls, len, low_keys, high_keys, values):
+        self = cls.__new__(cls)
+        self._len = len
+        self._low_keys = low_keys
+        self._high_keys = high_keys
+        self._values = values
+        self._frozen = True
+        return self
+
+    def _to_raw(self):
+        assert self._frozen or not self._len
+        return self._len, self._low_keys, self._high_keys, self._values
+
     def __getitem__(self, item):
-        idx = bisect.bisect_right(self._low_keys, item) - 1
+        assert self._frozen or not self._len
+        idx = _algo.search(self._low_keys, item)
         if idx != -1:
             assert self._low_keys[idx] <= item
             if item <= self._high_keys[idx]:
                 return self._values[idx] + (item - self._low_keys[idx])
         raise KeyError(item)
 
+    def _iter_tuples(self):
+        _low_keys = self._low_keys
+        _high_keys = self._high_keys
+        _values = self._values
+        for idx in _algo.iter_forward(len(self._low_keys)):
+            yield (_low_keys[idx], _high_keys[idx], _values[idx])
+
     def __iter__(self):
-        for k1, k2, v in zip(self._low_keys, self._high_keys, self._values):
+        for k1, k2, v in self._iter_tuples():
             for k in range(k1, k2+1):
                 yield k
 
@@ -364,7 +471,7 @@ class DeltaMap(Mapping):
 class AutoMap(Mapping):
     ''' Multi-strategy binary-search dict.
     '''
-    def __init__(self, iterable=None):
+    def __init__(self, iterable=None, *, freeze=True):
         self._simple = SortedMap()
         self._compressed = RangeMap()
         self._sequential = DeltaMap()
@@ -374,6 +481,8 @@ class AutoMap(Mapping):
             iterable = sorted(iterable)
             for key, value in iterable:
                 self._append_range(key, key, value, ErrorBool)
+            if freeze:
+                self._freeze()
 
     def _append_range(self, low_key, high_key, value, is_delta):
         assert not self._simple._len or self._simple._keys[-1] < low_key
@@ -418,6 +527,11 @@ class AutoMap(Mapping):
                 return
         assert low_key == high_key
         self._simple._append(low_key, value)
+
+    def _freeze(self):
+        self._simple._freeze()
+        self._compressed._freeze()
+        self._sequential._freeze()
 
     @classmethod
     def _from_raw(cls, simple_raw, compressed_raw, sequential_raw):

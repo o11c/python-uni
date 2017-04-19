@@ -14,11 +14,17 @@
 #   You should have received a copy of the GNU Lesser General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import abc
+import importlib
 import numpy as np
 import unittest
 
-from uni.mem.sorted import SortedSet, RangeSet, AutoSet
-from uni.mem.sorted import SortedMap, RangeMap, DeltaMap, AutoMap
+mod = importlib.import_module(__name__.replace('.mem.tests.test_', '.mem.'))
+for name in '''
+    SortedSet RangeSet AutoSet
+    SortedMap RangeMap DeltaMap AutoMap
+'''.split():
+    globals()[name] = getattr(mod, name)
+del name
 from uni._util import ErrorBool
 
 
@@ -94,6 +100,7 @@ class _TestSetBase(unittest.TestCase, metaclass=abc.ABCMeta):
         append_range = self.append_range
         for low_key, high_key in pairs:
             append_range(rv, low_key, high_key)
+        rv._freeze()
         return rv
 
     @staticmethod
@@ -247,6 +254,7 @@ class _TestMapBase(unittest.TestCase, metaclass=abc.ABCMeta):
         append_quad = self.append_quad
         for low_key, high_key, value, is_delta in quads:
             append_quad(rv, low_key, high_key, value, is_delta)
+        rv._freeze()
         return rv
 
     @staticmethod

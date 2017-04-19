@@ -7,18 +7,18 @@ test-slow:
 test: test-fast test-slow
 
 test-fast: test-unittest
+test-coverage: test-unittest
+test-coverage-fast: test-unittest
 test-unittest:
-	${PYTHON} -m unittest
+	${PYTHON} -m coverage run -p --source=. -m unittest
 
 test-fast: test-nose
 test-nose:
 	${PYTHON} -m nose
 
 test-fast: test-pytest
-test-coverage: test-pytest
-test-coverage-fast: test-pytest
 test-pytest: clean-coverage
-	${PYTHON} -m coverage run -p --source=. -m pytest
+	${PYTHON} -m pytest
 
 test-fast: test-copyright
 test-copyright:
@@ -46,5 +46,5 @@ test-coverage-fast:
 	${PYTHON} -m coverage report --skip-covered --fail-under=100
 
 clean-coverage:
-	rm -f .coverage
+	rm -f .coverage*
 	rm -rf htmlcov

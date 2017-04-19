@@ -230,3 +230,45 @@ def iter_order_forward(arr):
 def iter_order_backward(arr):
     for i in iter_backward(len(arr)):
         yield arr[i]
+
+
+def freeze(arr):
+    ''' Return a CFBS-ordered copy of arr.
+
+        We're *allowed* to munge arr in place, but I haven't figured out how.
+    '''
+    arr = make_order(arr)
+    return arr
+
+
+def _do_search(arr, item):
+    len_arr = len(arr)
+    if not len_arr:
+        return None
+    rv = 0
+    while True:
+        if item < arr[rv]:
+            tmp = left_child(rv)
+            if tmp < len_arr:
+                rv = tmp
+                continue
+            return predecessor(rv, len_arr)
+        elif arr[rv] < item:
+            tmp = right_child(rv)
+            if tmp < len_arr:
+                rv = tmp
+                continue
+            return rv
+        else:
+            return rv
+
+def search(arr, item):
+    ''' Return the index where the item might be.
+    '''
+    rv = _do_search(arr, item)
+    if rv is None:
+        rv = -1
+    assert rv == -1 or arr[rv] <= item, rv
+    # Note: successor(-1, i) == first(i), except when i == 0
+    assert len(arr) == 0 or successor(rv, len(arr)) is None or item < arr[successor(rv, len(arr))], rv
+    return rv
