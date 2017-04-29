@@ -418,8 +418,11 @@ def get_schema_info(fn):
             d = os.path.dirname(d)
             ver = os.path.basename(d)
         ver = ver.replace('-Update', '.0') # DTRT for `-Update` and `-Update1`
-    assert ver.count('.') == 2, fn
-    ver = v(ver)
+        if ver == ('Public'):
+            ver = None
+    if ver is not None:
+        assert ver.count('.') == 2, (fn, ver)
+        ver = v(ver)
     return sn, ''.join(exts), ver
 
 
@@ -475,6 +478,8 @@ def get_encoding(sn, ext, ver):
 
 def main_dump_file(fn, sample):
     sn, ext, ver = get_schema_info(fn)
+    if ver is None:
+        return
     encoding, errors = get_encoding(sn, ext, ver)
     print('#', sn, ver, encoding)
     if encoding is None:

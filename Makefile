@@ -27,12 +27,12 @@ test-copyright:
 test-slow: test-schema
 test-coverage: test-schema
 test-schema: clean-coverage
-	${PYTHON} -m coverage run -p --source=. -m uni.txt.schema --sample ucd/9.0.0/ArabicShaping.txt > /dev/null
-	${PYTHON} -m coverage run -p --source=. -m uni.txt.schema `find ucd/ -name '*.txt' | sort` > /dev/null
+	${PYTHON} -m coverage run -p --source=. -m uni.txt.schema --sample www.unicode.org/Public/9.0.0/ucd/ArabicShaping.txt > /dev/null
+	${PYTHON} -m coverage run -p --source=. -m uni.txt.schema `find www.unicode.org/ -type f | sort` > /dev/null
 
 test-coverage-fast: test-schema-fast
 test-schema-fast: clean-coverage
-	${PYTHON} -m coverage run -p --source=. -m uni.txt.schema --sample `find ucd/ -name '*.txt' | sort` > /dev/null
+	${PYTHON} -m coverage run -p --source=. -m uni.txt.schema --sample `find www.unicode.org/ -type f | sort` > /dev/null
 
 test-slow: test-coverage
 test-coverage:
